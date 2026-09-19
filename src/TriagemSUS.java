@@ -1,17 +1,14 @@
 public class TriagemSUS {
     private Paciente raiz;
 
-    // Construtor sem argumentos (inicia a árvore vazia)
     public TriagemSUS() {
         this.raiz = null;
     }
 
-    // Construtor opcional com raiz inicial
     public TriagemSUS(Paciente raiz) {
         this.raiz = raiz;
     }
 
-    // 1. Cadastrar Paciente (Método Iterativo conforme o pseudocódigo)
     public Paciente cadastrarPaciente(Paciente novoNo) {
         if (this.raiz == null) {
             this.raiz = novoNo;
@@ -25,9 +22,8 @@ public class TriagemSUS {
         while (aux != null) {
             pai = aux;
 
-            // Tratamento de CPF duplicado
             if (novoNo.getCpf().equals(aux.getCpf())) {
-                System.out.println("⚠️ Alerta: CPF " + novoNo.getCpf() + " já cadastrado!");
+                System.out.println(" Alerta: CPF " + novoNo.getCpf() + " já cadastrado!");
                 return this.raiz;
             }
 
@@ -78,11 +74,26 @@ public class TriagemSUS {
         }
 
         System.out.println("\n Paciente com CPF " + cpfBuscado + " não cadastrado na triagem do dia.");
-        System.out.println("🔍 Nós visitados (comparações): " + comparacoes + "\n");
+        System.out.println(" Nós visitados (comparações): " + comparacoes + "\n");
         return null;
     }
 
-    // Getter da raiz caso precise testar externamente
+    public void exibirEmOrdem() {
+        if (this.raiz == null) {
+            System.out.println("Nenhum paciente cadastrado na árvore.");
+            return;
+        }
+        exibirEmOrdemRecursivo(this.raiz);
+    }
+
+    private void exibirEmOrdemRecursivo(Paciente no) {
+        if (no != null) {
+            exibirEmOrdemRecursivo(no.getEsquerda());
+            System.out.println("CPF: " + no.getCpf() + " | Nome: " + no.getNome() + " | Atendimento: " + no.getTipoAtendimento());
+            exibirEmOrdemRecursivo(no.getDireita());
+        }
+    }
+
     public Paciente getRaiz() {
         return raiz;
     }

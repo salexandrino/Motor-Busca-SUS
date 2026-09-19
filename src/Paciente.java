@@ -7,7 +7,7 @@ public class Paciente {
     private Paciente esquerda;
     private Paciente direita;
 
-    public Paciente(Long cpf, String nome, String cartaoSus, TipoAtendimento tipoAtendimento, Paciente esquerda, Paciente direita) {
+    public Paciente(Long cpf, String nome, String cartaoSus, TipoAtendimento tipoAtendimento) {
         this.cpf = cpf;
         this.nome = nome;
         this.cartaoSus = cartaoSus;
