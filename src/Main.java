@@ -6,20 +6,23 @@ public class Main {
         TriagemSUS sistema = new TriagemSUS();
         int opcao = 0;
 
-        sistema.cadastrarPaciente(new Paciente(55555555500L, "Sthefanny Lara", "898000111222333", TipoAtendimento.CONSULTA_AGENDADA));
-        sistema.cadastrarPaciente(new Paciente(22222222200L, "Adriana Carvalho", "898000444555666", TipoAtendimento.TRIAGEM));
-        sistema.cadastrarPaciente(new Paciente(88888888800L, "Saymon Ryan", "898000777888999", TipoAtendimento.VACINACAO));
+        // Pré-cadastrando alguns pacientes usando a nova função de atendimento do dia
+        sistema.cadastrarAtendimentoDia(55555555500L, "Sthefanny Lara", "898000111222333", TipoAtendimento.CONSULTA_AGENDADA);
+        sistema.cadastrarAtendimentoDia(22222222200L, "Adriana Carvalho", "898000444555666", TipoAtendimento.TRIAGEM);
+        sistema.cadastrarAtendimentoDia(88888888800L, "Saymon Ryan", "898000777888999", TipoAtendimento.VACINACAO);
 
         System.out.println("\n=================================================");
         System.out.println("🏥 SISTEMA DE TRIAGEM E PRONTUÁRIO ELETRÔNICO - SUS");
         System.out.println("=================================================");
 
-        while (opcao != 4) {
+        while (opcao != 6) {
             System.out.println("\n--- MENU DE ATENDIMENTO ---");
-            System.out.println("1. Cadastrar Paciente");
+            System.out.println("1. Cadastrar Atendimento do Dia");
             System.out.println("2. Buscar Paciente (Recepção)");
-            System.out.println("3. Listar Pacientes em Ordem (CPF)");
-            System.out.println("4. Sair do Sistema");
+            System.out.println("3. Remover Paciente (Ex: Mudou de bairro)");
+            System.out.println("4. Imprimir Fila do Dia (Pré-Ordem)");
+            System.out.println("5. Listar Pacientes em Ordem de CPF (Em-Ordem)");
+            System.out.println("6. Sair do Sistema");
             System.out.print("Escolha uma opção: ");
 
             try {
@@ -27,7 +30,7 @@ public class Main {
 
                 switch (opcao) {
                     case 1:
-                        System.out.println("\n--- CADASTRO DE PACIENTE ---");
+                        System.out.println("\n--- CADASTRO DE ATENDIMENTO DO DIA ---");
                         System.out.print("Digite o CPF (apenas números): ");
                         Long cpf = Long.parseLong(scanner.nextLine());
 
@@ -55,8 +58,8 @@ public class Main {
                             }
                         }
 
-                        Paciente novoPaciente = new Paciente(cpf, nome, cartaoSus, tipo);
-                        sistema.cadastrarPaciente(novoPaciente);
+                        // Usando a nova função iterativa
+                        sistema.cadastrarAtendimentoDia(cpf, nome, cartaoSus, tipo);
                         break;
 
                     case 2:
@@ -67,11 +70,30 @@ public class Main {
                         break;
 
                     case 3:
+                        System.out.println("\n--- REMOÇÃO DE PACIENTE ---");
+                        System.out.print("Digite o CPF do paciente a ser removido: ");
+                        Long cpfRemover = Long.parseLong(scanner.nextLine());
+                        // Chama o método "casca" que discutimos na resposta de remoção
+                        sistema.removerPorCpf(cpfRemover);
+                        System.out.println("Operação de remoção finalizada.");
+                        break;
+
+                    case 4:
+                        System.out.println("\n--- FILA DE ATENDIMENTOS (PRÉ-ORDEM) ---");
+                        if (sistema.getRaiz() == null) {
+                            System.out.println("Nenhum paciente cadastrado hoje.");
+                        } else {
+                            // Chama a função de impressão pré-ordem passando a raiz
+                            sistema.imprimir_atendimentos_dia(sistema.getRaiz());
+                        }
+                        break;
+
+                    case 5:
                         System.out.println("\n--- LISTAGEM DE PACIENTES (ORDEM CRESCENTE POR CPF) ---");
                         sistema.exibirEmOrdem();
                         break;
 
-                    case 4:
+                    case 6:
                         System.out.println("\nEncerrou o sistema de triagem do SUS. Bom trabalho!");
                         break;
 
@@ -79,7 +101,7 @@ public class Main {
                         System.out.println("\nOpção inválida! Tente novamente.");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("\n Erro: Entrada inválida. Digite apenas números para CPF e escolhas de menu.");
+                System.out.println("\nErro: Entrada inválida. Digite apenas números para CPF e escolhas de menu.");
             }
         }
 
