@@ -1,230 +1,174 @@
 public class TriagemSUS {
-    private Paciente raiz;
+    private Paciente raizCadastro;
+    private Paciente raizAgendaDia;
 
-    public TriagemSUS() {
-        this.raiz = null;
-    }
-
-    public TriagemSUS(Paciente raiz) {
-        this.raiz = raiz;
-    }
-
-    public Paciente cadastrarPaciente(Paciente novoNo) {
-        if (this.raiz == null) {
-            this.raiz = novoNo;
-            System.out.println(" Paciente " + novoNo.getNome() + " cadastrado como raiz.");
-            return this.raiz;
+    public boolean cadastrarPaciente(long cpf, String nomeCompleto, String cartaoSus,
+                                     TipoAtendimento tipoAtendimento) {
+        Paciente novo = new Paciente(cpf, nomeCompleto, cartaoSus, tipoAtendimento);
+        if (!inserirNoCadastro(novo)) {
+            System.out.println("Alerta: CPF " + cpf + " ja cadastrado na UBS.");
+            return false;
         }
+        System.out.println("Paciente " + nomeCompleto + " cadastrado na UBS.");
+        return true;
+    }
 
-        Paciente aux = this.raiz;
+    private boolean inserirNoCadastro(Paciente novo) {
+        if (raizCadastro == null) {
+            raizCadastro = novo;
+            return true;
+        }
+        Paciente aux = raizCadastro;
         Paciente pai = null;
-
         while (aux != null) {
             pai = aux;
-
-            if (novoNo.getCpf().equals(aux.getCpf())) {
-                System.out.println(" Alerta: CPF " + novoNo.getCpf() + " já cadastrado!");
-                return this.raiz;
-            }
-
-            if (novoNo.getCpf() < aux.getCpf()) {
-                aux = aux.getEsquerda();
-            } else {
-                aux = aux.getDireita();
-            }
+            if (novo.getCpf() == aux.getCpf()) return false;
+            aux = novo.getCpf() < aux.getCpf() ? aux.getEsquerda() : aux.getDireita();
         }
-
-        // Conecta o novo nó ao nó pai
-        if (novoNo.getCpf() < pai.getCpf()) {
-            pai.setEsquerda(novoNo);
-        } else {
-            pai.setDireita(novoNo);
-        }
-
-        System.out.println("Paciente " + novoNo.getNome() + " cadastrado com sucesso.");
-        return this.raiz;
+        novo.setPai(pai);
+        if (novo.getCpf() < pai.getCpf()) pai.setEsquerda(novo);
+        else pai.setDireita(novo);
+        return true;
     }
 
-    // 2. Buscar Paciente por CPF (Com contador de comparações exigido)
-    public Paciente buscarPaciente(Long cpfBuscado) {
-        Paciente aux = this.raiz;
-        int comparacoes = 0;
+    // Busca iterativa da aula, com contagem de nos visitados.
+    public Paciente buscarPaciente(long cpf) {
+        Paciente encontrado = buscar(raizCadastro, cpf, true);
+        if (encontrado == null) {
+            System.out.println("Paciente nao cadastrado na triagem do dia.");
+        } else {
+            System.out.println("Ficha localizada: " + encontrado.getNomeCompleto()
+                    + " | CPF: " + encontrado.getCpf()
+                    + " | Cartao SUS: " + encontrado.getCartaoSus()
+                    + " | Tipo: " + encontrado.getTipoAtendimento());
+        }
+        return encontrado;
+    }
 
+    private Paciente buscar(Paciente raiz, long cpf, boolean mostrarComparacoes) {
+        Paciente aux = raiz;
+        int comparacoes = 0;
         while (aux != null) {
             comparacoes++;
-
-            if (cpfBuscado.equals(aux.getCpf())) {
-                System.out.println("\n========================================");
-                System.out.println(" FICHA DO PACIENTE LOCALIZADA");
-                System.out.println("========================================");
-                System.out.println("Nome: " + aux.getNome());
-                System.out.println("CPF: " + aux.getCpf());
-                System.out.println("Cartão SUS: " + aux.getCartaoSus());
-                System.out.println("Tipo de Atendimento: " + aux.getTipoAtendimento());
-                System.out.println(" Nós visitados (comparações): " + comparacoes);
-                System.out.println("========================================\n");
+            if (cpf == aux.getCpf()) {
+                if (mostrarComparacoes) System.out.println("Nos visitados: " + comparacoes);
                 return aux;
             }
-
-            if (cpfBuscado < aux.getCpf()) {
-                aux = aux.getEsquerda();
-            } else {
-                aux = aux.getDireita();
-            }
+            aux = cpf < aux.getCpf() ? aux.getEsquerda() : aux.getDireita();
         }
-
-        System.out.println("\n Paciente com CPF " + cpfBuscado + " não cadastrado na triagem do dia.");
-        System.out.println(" Nós visitados (comparações): " + comparacoes + "\n");
+        if (mostrarComparacoes) System.out.println("Nos visitados: " + comparacoes);
         return null;
     }
 
-    public void exibirEmOrdem() {
-        if (this.raiz == null) {
-            System.out.println("Nenhum paciente cadastrado na árvore.");
+    public void removerPorCpf(long cpf) {
+        if (buscar(raizCadastro, cpf, false) == null) {
+            System.out.println("Nao existe paciente cadastrado com esse CPF.");
             return;
         }
-        exibirEmOrdemRecursivo(this.raiz);
+        raizCadastro = removerPaciente(raizCadastro, cpf);
+        if (raizCadastro != null) raizCadastro.setPai(null);
+        System.out.println("Paciente removido do cadastro da UBS.");
     }
 
-    private void exibirEmOrdemRecursivo(Paciente no) {
-        if (no != null) {
-            exibirEmOrdemRecursivo(no.getEsquerda());
-            System.out.println("CPF: " + no.getCpf() + " | Nome: " + no.getNome() + " | Atendimento: " + no.getTipoAtendimento());
-            exibirEmOrdemRecursivo(no.getDireita());
-        }
-    }
-
-    public Paciente getRaiz() {
-        return raiz;
-    }
-
-
-    public Paciente removerPaciente(Paciente raiz, Long cpf) {
-        if (raiz == null) {
-            return null;
-        }
-
+    // Remocao recursiva: folha, um filho ou dois filhos (usa o sucessor).
+    public Paciente removerPaciente(Paciente raiz, long cpf) {
+        if (raiz == null) return null;
         if (cpf < raiz.getCpf()) {
-            raiz.setEsquerda(removerPaciente(raiz.getEsquerda(), cpf));
+            Paciente filho = removerPaciente(raiz.getEsquerda(), cpf);
+            raiz.setEsquerda(filho);
+            if (filho != null) filho.setPai(raiz);
         } else if (cpf > raiz.getCpf()) {
-            raiz.setDireita(removerPaciente(raiz.getDireita(), cpf));
+            Paciente filho = removerPaciente(raiz.getDireita(), cpf);
+            raiz.setDireita(filho);
+            if (filho != null) filho.setPai(raiz);
         } else {
-            if (raiz.getEsquerda() == null && raiz.getDireita() == null) {
-                return null;
+            if (raiz.getEsquerda() == null) {
+                Paciente filho = raiz.getDireita();
+                if (filho != null) filho.setPai(raiz.getPai());
+                return filho;
             }
-            else if (raiz.getEsquerda() == null) {
-                return raiz.getDireita();
+            if (raiz.getDireita() == null) {
+                Paciente filho = raiz.getEsquerda();
+                if (filho != null) filho.setPai(raiz.getPai());
+                return filho;
             }
-            else if (raiz.getDireita() == null) {
-                return raiz.getEsquerda();
-            }
-            else {
-                Paciente sucessor = menorElemento(raiz.getDireita());
-
-                raiz.setCpf(sucessor.getCpf());
-                raiz.setNome(sucessor.getNome());
-                raiz.setCartaoSus(sucessor.getCartaoSus());
-                raiz.setTipoAtendimento(sucessor.getTipoAtendimento());
-
-                raiz.setDireita(removerPaciente(raiz.getDireita(), sucessor.getCpf()));
-            }
+            Paciente sucessor = menorElemento(raiz.getDireita());
+            copiarDados(sucessor, raiz);
+            Paciente filho = removerPaciente(raiz.getDireita(), sucessor.getCpf());
+            raiz.setDireita(filho);
+            if (filho != null) filho.setPai(raiz);
         }
         return raiz;
     }
 
-    // Função auxiliar para encontrar o menor elemento (usada no Caso 4)
     private Paciente menorElemento(Paciente no) {
-        Paciente atual = no;
-        // O menor elemento em uma BST sempre fica o mais à esquerda possível
-        while (atual.getEsquerda() != null) {
-            atual = atual.getEsquerda();
-        }
-        return atual;
+        while (no.getEsquerda() != null) no = no.getEsquerda();
+        return no;
     }
 
-    public Paciente cadastrarAtendimentoDia(Long cpf, String nome, String cartaoSus, TipoAtendimento tipoAtendimento) {
+    private void copiarDados(Paciente origem, Paciente destino) {
+        destino.setCpf(origem.getCpf());
+        destino.setNomeCompleto(origem.getNomeCompleto());
+        destino.setCartaoSus(origem.getCartaoSus());
+        destino.setTipoAtendimento(origem.getTipoAtendimento());
+    }
 
-        Paciente novoNo = new Paciente(cpf, nome, cartaoSus, tipoAtendimento);
-
-        // Se a árvore estiver vazia, o novo nó torna-se a raiz
-        if (this.raiz == null) {
-            this.raiz = novoNo;
-            System.out.println("Paciente " + nome + " cadastrado como primeiro do dia.");
-            return this.raiz;
+    // So deve ser chamado apos o paciente ser localizado no cadastro da UBS.
+    public boolean cadastrarAtendimentoDia(Paciente paciente) {
+        Paciente novo = new Paciente(paciente.getCpf(), paciente.getNomeCompleto(),
+                paciente.getCartaoSus(), paciente.getTipoAtendimento());
+        if (raizAgendaDia == null) {
+            raizAgendaDia = novo;
+            System.out.println("Inserido na agenda do dia: " + novo.getNomeCompleto());
+            return true;
         }
-
-        Paciente aux = this.raiz;
+        Paciente aux = raizAgendaDia;
         Paciente pai = null;
-
-        // Procura a posição correta de inserção
         while (aux != null) {
             pai = aux;
-
-            // Tratamento extra para evitar CPFs duplicados na fila do dia
-            if (cpf.equals(aux.getCpf())) {
-                System.out.println("Erro: O paciente com CPF " + cpf + " já está cadastrado hoje.");
-                return this.raiz;
+            if (novo.getCpf() == aux.getCpf()) {
+                System.out.println("Paciente ja esta na agenda do dia.");
+                return false;
             }
-
-            // Desce na árvore comparando os CPFs
-            if (cpf < aux.getCpf()) {
-                aux = aux.getEsquerda();
-            } else {
-                aux = aux.getDireita();
-            }
+            aux = novo.getCpf() < aux.getCpf() ? aux.getEsquerda() : aux.getDireita();
         }
-
-        // Conecta o novo nó ao nó pai na posição que ficou vazia (NULO)
-        if (cpf < pai.getCpf()) {
-            pai.setEsquerda(novoNo);
-        } else {
-            pai.setDireita(novoNo);
-        }
-
-        System.out.println("Paciente " + nome + " cadastrado na triagem do dia com sucesso!");
-        return this.raiz;
+        novo.setPai(pai);
+        if (novo.getCpf() < pai.getCpf()) pai.setEsquerda(novo);
+        else pai.setDireita(novo);
+        System.out.println("Inserido na agenda do dia: " + novo.getNomeCompleto());
+        return true;
     }
 
+    public void cadastrarAtendimentoDia(long cpf) {
+        Paciente paciente = buscarPaciente(cpf);
+        if (paciente != null) cadastrarAtendimentoDia(paciente);
+    }
 
-    public void exibirAtendimentosFila() {
-        if (this.raiz == null) {
+    // Busca em profundidade pre-ordem: no, esquerda e direita.
+    public void imprimirAtendimentosDia() {
+        if (raizAgendaDia == null) {
             System.out.println("Nenhum atendimento cadastrado para o dia.");
             return;
         }
-        System.out.println("\n--- FILA DE ATENDIMENTO (Pré-Ordem) ---");
-        exibirPreOrdemRecursivo(this.raiz);
-        System.out.println("---------------------------------------");
+        System.out.println("\nAGENDA DE ATENDIMENTOS DO DIA (PRE-ORDEM)");
+        imprimirAtendimentosDia(raizAgendaDia);
     }
 
-    private void exibirPreOrdemRecursivo(Paciente no) {
-        if (no != null) {
-            // PRÉ-ORDEM: 1º Imprime o valor (Nó)
-            System.out.println("-> " + no.getNome() + " (CPF: " + no.getCpf() + ") - " + no.getTipoAtendimento());
-
-            // 2º Percorre a subárvore à esquerda
-            exibirPreOrdemRecursivo(no.getEsquerda());
-
-            // 3º Percorre a subárvore à direita
-            exibirPreOrdemRecursivo(no.getDireita());
-        }
+    private void imprimirAtendimentosDia(Paciente no) {
+        if (no == null) return;
+        System.out.println("Nome: " + no.getNomeCompleto() + " | CPF: " + no.getCpf());
+        imprimirAtendimentosDia(no.getEsquerda());
+        imprimirAtendimentosDia(no.getDireita());
     }
 
-    public void imprimir_atendimentos_dia(Paciente no) {
-        if (no != null) {
-            // 1. NÓ: Imprime o nome e o CPF do paciente atual
-            System.out.println("Nome: " + no.getNome() + " | CPF: " + no.getCpf());
-
-            // 2. ESQUERDA: Percorre recursivamente a subárvore esquerda
-            imprimir_atendimentos_dia(no.getEsquerda());
-
-            // 3. DIREITA: Percorre recursivamente a subárvore direita
-            imprimir_atendimentos_dia(no.getDireita());
-        }
+    public void imprimirCadastroEmOrdem() {
+        imprimirCadastroEmOrdem(raizCadastro);
     }
 
-    public void removerPorCpf(Long cpf) {
-        this.raiz = removerPaciente(this.raiz, cpf);
+    private void imprimirCadastroEmOrdem(Paciente no) {
+        if (no == null) return;
+        imprimirCadastroEmOrdem(no.getEsquerda());
+        System.out.println(no.getCpf() + " - " + no.getNomeCompleto());
+        imprimirCadastroEmOrdem(no.getDireita());
     }
-
-
 }
