@@ -4,14 +4,6 @@ Um sistema interativo desenvolvido em Java que simula a recepção e triagem de 
 
 ---
 
-## 🎥 Vídeo de Apresentação (2 minutos)
-
-Assista à demonstração do funcionamento do sistema, explicação do código e execução na prática:
-
-▶️ **[Clique aqui para assistir à apresentação](https://drive.google.com/file/d/13hmes2vjwFLR33j7E-nQ5KE95CP1yHjP/view?usp=drive_link)**
-
----
-
 ## 🚀 Funcionalidades
 
 - **Cadastro de Paciente:** Insere novos pacientes na Árvore Binária de Busca ordenando pelo CPF.
